@@ -1,11 +1,11 @@
 {
   "name": "squoosh-desktop",
-  "version": "1.0.0",
-  "description": "Desktop image compression tool based on Google Squoosh",
+  "version": "1.1.0",
+  "description": "Cross-platform desktop app for Google Squoosh with smart startup system",
   "main": "main.js",
   "scripts": {
+    "start": "./start.sh",
     "prebuild": "node scripts/fetch-squoosh.js",
-    "start": "electron .",
     "build": "npm run prebuild && electron-builder",
     "build:win": "npm run prebuild && electron-builder --win",
     "build:mac": "npm run prebuild && electron-builder --mac",
@@ -54,7 +54,11 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "ia32"]
+          "arch": ["x64"]
+        },
+        {
+          "target": "nsis", 
+          "arch": ["ia32"]
         }
       ]
     },
@@ -71,7 +75,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
     }
   }
 }
