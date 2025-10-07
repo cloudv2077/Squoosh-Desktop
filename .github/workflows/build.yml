@@ -1,9 +1,9 @@
-name: 🚀 Cross-Platform Build & Release
+name: 🚀 Final Build - All Platforms
 
 on:
+  workflow_dispatch:
   push:
     tags: ['v*']
-  workflow_dispatch:
 
 jobs:
   build:
@@ -12,49 +12,46 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            platform: windows
-            target: nsis
-          - os: macos-latest  
-            platform: mac
-            target: dmg
           - os: ubuntu-latest
             platform: linux
-            target: AppImage
+            name: Linux
+          - os: windows-latest
+            platform: windows
+            name: Windows
+          - os: macos-latest
+            platform: mac
+            name: macOS
     
     steps:
-      - name: 📥 Checkout Repository
+      - name: 📥 Checkout
         uses: actions/checkout@v4
       
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-      
+          
       - name: 📦 Install Dependencies
-        run: npm ci
+        run: npm install
         
       - name: 🏗️ Prepare Build
         run: npm run prebuild
         
-      - name: 🔨 Build Electron App
-        run: npx electron-builder --${{ matrix.platform }} --publish=never
+      - name: 🔨 Build for ${{ matrix.name }}
+        run: npx electron-builder --${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 使用npm缓存的electron
-          ELECTRON_CACHE: ~/.cache/electron
           
-      - name: 📋 List Build Output  
+      - name: 📋 Show Build Results
         shell: bash
         run: |
-          echo "Build completed for ${{ matrix.platform }}"
-          ls -la dist/ 2>/dev/null || dir dist\ 2>/dev/null || echo "No dist folder found"
+          echo "=== Build completed for ${{ matrix.name }} ==="
+          ls -la dist/ 2>/dev/null || echo "No dist directory"
+          find dist/ -type f 2>/dev/null || echo "No files in dist"
           
-      - name: 📤 Upload Build Artifacts
+      - name: 📤 Upload ${{ matrix.name }} Build
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: squoosh-desktop-${{ matrix.platform }}
           path: dist/
-          retention-days: 7
+          retention-days: 30
