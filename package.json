@@ -1,0 +1,45 @@
+{
+  "name": "squoosh-desktop",
+  "version": "1.0.0",
+  "description": "本地化图片压缩工具 - 基于Google Squoosh技术",
+  "main": "main.js",
+  "scripts": {
+    "prebuild": "node scripts/fetch-squoosh.js",
+    "start": "npm run prebuild && electron .",
+    "build": "npm run prebuild && electron-builder",
+    "build-all": "npm run prebuild && electron-builder --mac --windows --linux",
+    "clean": "rm -rf squoosh-static .tmp",
+    "dev": "npm run prebuild && npm start"
+  },
+  "keywords": ["electron", "squoosh", "image", "compression"],
+  "author": "Squoosh Desktop Team",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.squoosh.desktop",
+    "productName": "Squoosh Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "squoosh-static/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": [{"target": "dmg", "arch": ["x64", "arm64"]}]
+    },
+    "win": {
+      "target": [{"target": "nsis", "arch": ["x64"]}]
+    },
+    "linux": {
+      "target": [{"target": "AppImage", "arch": ["x64"]}],
+      "category": "Graphics"
+    }
+  }
+}
