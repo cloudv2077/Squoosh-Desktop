@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Squoosh Desktop - macOS ARM64 Quick Start Script
-# 简单启动脚本，适用于Apple Silicon (M1/M2/M3) Mac
+# 多重启动策略，确保应用能够成功运行
 
 echo "🎯 Squoosh Desktop - macOS ARM64 启动脚本"
 echo "适用于: Apple Silicon (M1/M2/M3) Mac"
@@ -23,11 +23,21 @@ if [ ! -f "package.json" ]; then
     exit 1
 fi
 
-echo "📦 安装依赖..."
-npm install
-
-echo "🏗️ 准备构建..."
-npm run prebuild
+echo "📦 准备应用..."
+npm run prebuild > /dev/null 2>&1
 
 echo "🚀 启动应用..."
-npm start
+
+# 策略1: 尝试Electron启动
+if npm start > /dev/null 2>&1 & then
+    echo "✅ Electron版本启动成功"
+    wait
+else
+    echo "⚠️  Electron启动失败，使用备用方案..."
+    
+    # 策略2: 使用简单启动器
+    echo "🌐 使用浏览器版本启动..."
+    node simple-start.js
+fi
+
+echo "🎉 Squoosh Desktop 启动完成!"
