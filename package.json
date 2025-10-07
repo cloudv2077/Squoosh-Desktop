@@ -7,8 +7,8 @@
     "prebuild": "node scripts/fetch-squoosh.js",
     "start": "electron .",
     "build": "npm run prebuild && electron-builder",
-    "build:win": "npm run prebuild && electron-builder --win32",
-    "build:mac": "npm run prebuild && electron-builder --darwin",
+    "build:win": "npm run prebuild && electron-builder --win",
+    "build:mac": "npm run prebuild && electron-builder --mac",
     "build:linux": "npm run prebuild && electron-builder --linux"
   },
   "keywords": [
@@ -31,19 +31,47 @@
     },
     "files": [
       "main.js",
+      "start.sh",
+      "start.bat",
       "squoosh-static/**/*",
-      "package.json"
+      "package.json",
+      "README.md"
+    ],
+    "extraResources": [
+      "start.sh",
+      "start.bat"
     ],
     "mac": {
       "category": "public.app-category.graphics-design",
-      "target": "dmg"
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ]
     },
     "linux": {
-      "target": "AppImage",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64", "arm64"]
+        }
+      ],
       "category": "Graphics"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }
