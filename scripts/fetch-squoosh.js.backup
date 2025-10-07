@@ -7,9 +7,8 @@ const staticDir = 'squoosh-static';
 const squooshDir = path.join(tempDir, 'squoosh');
 
 function run() {
-  // Skip if already exists and is substantial (not just a placeholder)
-  const existingIndex = path.join(staticDir, 'index.html');
-  if (fs.existsSync(existingIndex) && fs.statSync(existingIndex).size > 10000) {
+  // Skip if already exists
+  if (fs.existsSync(path.join(staticDir, 'index.html'))) {
     console.log('✅ Squoosh already built');
     return;
   }
@@ -29,29 +28,11 @@ function run() {
     execSync('npm install', { cwd: squooshDir, stdio: 'pipe' });
     execSync('npm run build', { cwd: squooshDir, stdio: 'pipe', env: { ...process.env, NODE_ENV: 'production' } });
     
-    // Try multiple possible build output paths
-    const possibleBuildPaths = [
-      path.join(squooshDir, 'build'),
-      path.join(squooshDir, '.tmp', 'build', 'static'),
-      path.join(squooshDir, 'dist'),
-      path.join(squooshDir, 'static')
-    ];
-    
-    let buildFound = false;
-    for (const buildPath of possibleBuildPaths) {
-      console.log(`🔍 Checking build path: ${buildPath}`);
-      if (fs.existsSync(buildPath) && fs.existsSync(path.join(buildPath, 'index.html'))) {
-        console.log(`✅ Found build at: ${buildPath}`);
-        copyDir(buildPath, staticDir);
-        buildFound = true;
-        break;
-      }
-    }
-    
-    if (buildFound) {
-      console.log('✅ Build complete - Squoosh copied successfully');
-    } else {
-      throw new Error('No valid build directory found');
+    // Copy files
+    const buildDir = path.join(squooshDir, '.tmp', 'build', 'static');
+    if (fs.existsSync(buildDir)) {
+      copyDir(buildDir, staticDir);
+      console.log('✅ Build complete');
     }
     
     // Cleanup
@@ -82,4 +63,3 @@ function copyDir(src, dest) {
 }
 
 if (require.main === module) run();
-module.exports = run;
