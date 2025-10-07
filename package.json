@@ -1,7 +1,7 @@
 {
-  "name": "squoosh-desktop",
+  "name": "tu-xiaoxiao",
   "version": "1.1.0",
-  "description": "Cross-platform desktop app for Google Squoosh with smart startup system",
+  "description": "图小小 - 强大的跨平台图片压缩优化工具",
   "main": "main.js",
   "scripts": {
     "start": "./start.sh",
@@ -17,15 +17,15 @@
     "image",
     "compression"
   ],
-  "author": "Squoosh Desktop Team",
+  "author": "图小小开发团队",
   "license": "Apache-2.0",
   "devDependencies": {
     "electron": "^25.9.0",
     "electron-builder": "24.6.4"
   },
   "build": {
-    "appId": "com.squoosh.desktop",
-    "productName": "Squoosh Desktop",
+    "appId": "com.tuxiaoxiao.desktop",
+    "productName": "图小小",
     "directories": {
       "output": "dist"
     },

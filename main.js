@@ -100,7 +100,7 @@ function startServer() {
             const port = await findAvailablePort();
             
             server.listen(port, () => {
-                console.log(`🚀 Squoosh服务器启动在端口 ${port}`);
+                console.log(`🚀 图小小服务器启动在端口 ${port}`);
                 resolve(port);
             });
             
@@ -122,7 +122,7 @@ async function createWindow() {
                 contextIsolation: true,
                 webSecurity: true
             },
-            title: 'Squoosh Desktop',
+            title: '图小小',
             icon: path.join(__dirname, 'assets', 'icon.png'),
             show: false // 先不显示，等加载完成
         });

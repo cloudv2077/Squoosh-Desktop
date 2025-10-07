@@ -83,3 +83,55 @@ function copyDir(src, dest) {
 
 if (require.main === module) run();
 module.exports = run;
+
+// 图小小汉化处理函数
+async function applyTuXiaoXiaoLocalization() {
+    const fs = require('fs');
+    const path = require('path');
+    
+    console.log('🎨 应用图小小汉化...');
+    
+    const staticDir = 'squoosh-static';
+    
+    // 修改manifest.json
+    const manifestPath = path.join(staticDir, 'manifest.json');
+    if (fs.existsSync(manifestPath)) {
+        let manifest = fs.readFileSync(manifestPath, 'utf8');
+        manifest = manifest.replace(/"name":"Squoosh"/g, '"name":"图小小"');
+        manifest = manifest.replace(/"short_name":"Squoosh"/g, '"short_name":"图小小"');
+        manifest = manifest.replace(/Compress and compare images with different codecs, right in your browser\./g, '图小小 - 压缩和比较不同编码格式的图片，强大的图片优化工具');
+        fs.writeFileSync(manifestPath, manifest);
+    }
+    
+    // 修改index.html
+    const htmlPath = path.join(staticDir, 'index.html');
+    if (fs.existsSync(htmlPath)) {
+        let html = fs.readFileSync(htmlPath, 'utf8');
+        html = html.replace(/<title>Squoosh<\/title>/g, '<title>图小小</title>');
+        html = html.replace(/content="Squoosh is the ultimate image optimizer[^"]*"/g, 'content="图小小是终极图片优化工具，让您可以使用不同编解码器压缩和比较图片。"');
+        html = html.replace(/property="og:title" content="Squoosh"/g, 'property="og:title" content="图小小"');
+        
+        // 注入汉化脚本
+        if (!html.includes('customize-ui.js')) {
+            html = html.replace('</body>', '<script src="./customize-ui.js"></script></body>');
+        }
+        
+        fs.writeFileSync(htmlPath, html);
+    }
+    
+    // 复制汉化脚本
+    const scriptSource = 'customize-ui.js';
+    const scriptDest = path.join(staticDir, 'customize-ui.js');
+    if (fs.existsSync(scriptSource)) {
+        fs.copyFileSync(scriptSource, scriptDest);
+    }
+    
+    console.log('✅ 图小小汉化应用完成！');
+}
+
+// 修改主函数，在构建完成后应用汉化
+const originalRun = run;
+run = async function() {
+    await originalRun();
+    await applyTuXiaoXiaoLocalization();
+};
