@@ -7,10 +7,9 @@
     "prebuild": "node scripts/fetch-squoosh.js",
     "start": "npm run prebuild && electron .",
     "build": "npm run prebuild && electron-builder",
-    "build:win": "npm run prebuild && electron-builder --win --x64",
-    "build:mac": "npm run prebuild && electron-builder --mac --x64 --arm64",
+    "build:win": "npm run prebuild && electron-builder --windows --x64",
+    "build:mac": "npm run prebuild && electron-builder --mac",
     "build:linux": "npm run prebuild && electron-builder --linux --x64",
-    "build:all": "npm run prebuild && electron-builder --mac --windows --linux",
     "clean": "rm -rf squoosh-static .tmp dist",
     "dev": "npm run prebuild && npm start"
   },
@@ -30,15 +29,7 @@
     "files": [
       "main.js",
       "squoosh-static/**/*",
-      "package.json",
-      "!node_modules/**/*",
-      "node_modules/electron/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "squoosh-static",
-        "to": "squoosh-static"
-      }
+      "package.json"
     ],
     "mac": {
       "category": "public.app-category.graphics-design",
@@ -47,8 +38,7 @@
           "target": "dmg",
           "arch": ["x64", "arm64"]
         }
-      ],
-      "icon": "icon.icns"
+      ]
     },
     "win": {
       "target": [
@@ -56,8 +46,7 @@
           "target": "nsis",
           "arch": ["x64"]
         }
-      ],
-      "icon": "icon.ico"
+      ]
     },
     "linux": {
       "target": [
@@ -66,8 +55,7 @@
           "arch": ["x64"]
         }
       ],
-      "category": "Graphics",
-      "icon": "icon.png"
+      "category": "Graphics"
     },
     "nsis": {
       "oneClick": false,

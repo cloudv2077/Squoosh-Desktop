@@ -13,21 +13,14 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            platform: win
-            arch: x64
-            ext: exe
+            platform: windows
+            target: nsis
           - os: macos-latest  
             platform: mac
-            arch: arm64
-            ext: dmg
-          - os: macos-latest
-            platform: mac  
-            arch: x64
-            ext: dmg
+            target: dmg
           - os: ubuntu-latest
             platform: linux
-            arch: x64
-            ext: AppImage
+            target: AppImage
     
     steps:
       - name: 📥 Checkout Repository
@@ -42,75 +35,26 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm ci
         
-      - name: 🏗️ Prepare Build Environment
-        run: |
-          mkdir -p dist
-          npm run prebuild
-          
-      - name: 🎯 Build Electron App
-        run: npm run build -- --${{ matrix.platform }} --${{ matrix.arch }}
+      - name: 🏗️ Prepare Build
+        run: npm run prebuild
+        
+      - name: 🔨 Build Electron App
+        run: npx electron-builder --${{ matrix.platform }} --publish=never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 使用npm缓存的electron
+          ELECTRON_CACHE: ~/.cache/electron
           
-      - name: 📋 List Build Output
+      - name: 📋 List Build Output  
+        shell: bash
         run: |
-          echo "Build completed for ${{ matrix.platform }}-${{ matrix.arch }}"
-          ls -la dist/
+          echo "Build completed for ${{ matrix.platform }}"
+          ls -la dist/ 2>/dev/null || dir dist\ 2>/dev/null || echo "No dist folder found"
           
       - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: squoosh-desktop-${{ matrix.platform }}-${{ matrix.arch }}
-          path: |
-            dist/*.dmg
-            dist/*.exe
-            dist/*.AppImage
-            dist/*.zip
-            dist/*.tar.gz
-          retention-days: 30
-          
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-        
-      - name: 📥 Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-assets/
-          
-      - name: 📋 Prepare Release Assets
-        run: |
-          echo "Preparing release assets..."
-          find release-assets/ -name "*.dmg" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.zip" | head -10
-          
-      - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release-assets/**/*
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          body: |
-            🎯 **Squoosh Desktop v${{ github.ref_name }}**
-            
-            Revolutionary 24KB → 50MB dynamic desktop app!
-            
-            **📦 Downloads:**
-            - 🪟 **Windows**: `.exe` installer  
-            - 🍎 **macOS Intel**: `x64.dmg`
-            - 🍎 **macOS Apple Silicon**: `arm64.dmg`  
-            - 🐧 **Linux**: `.AppImage`
-            
-            **✨ Features:**
-            - Dynamic Google Squoosh integration
-            - Offline image compression
-            - Cross-platform support
-            - Zero-config experience
-            
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: squoosh-desktop-${{ matrix.platform }}
+          path: dist/
+          retention-days: 7
