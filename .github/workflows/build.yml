@@ -34,6 +34,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
           
       - name: 📦 Install Dependencies
         run: npm install
@@ -50,7 +51,8 @@ jobs:
         shell: bash
         run: |
           echo "=== Build completed for ${{ matrix.name }} ==="
-          find dist/ -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" 2>/dev/null || echo "No installer files found"
+          find dist/ -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" \) 2>/dev/null || echo "No installer files found"
+          ls -la dist/ 2>/dev/null || echo "No dist directory"
           
       - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -65,6 +67,9 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     
     steps:
+      - name: 📥 Checkout for Release Notes
+        uses: actions/checkout@v4
+        
       - name: 📥 Download All Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -73,30 +78,72 @@ jobs:
       - name: 📋 List Downloaded Files
         run: |
           echo "=== Downloaded Artifacts ==="
-          find ./artifacts -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage"
+          find ./artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" \) || echo "No installer files found"
+          echo "=== All Files ==="
+          find ./artifacts -type f | head -20
           
       - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v1
         with:
           files: |
             ./artifacts/**/*.exe
             ./artifacts/**/*.dmg
             ./artifacts/**/*.AppImage
-          generate_release_notes: true
-          name: Squoosh Desktop ${{ github.ref_name }}
+            ./artifacts/**/*.deb
+            ./artifacts/**/*.rpm
+          generate_release_notes: false
+          name: "Squoosh Desktop ${{ github.ref_name }}"
           body: |
-            ## 🎉 Squoosh Desktop ${{ github.ref_name }}
+            # 🎉 Squoosh Desktop ${{ github.ref_name }}
             
-            ### 📦 下载安装包 / Download Installers:
+            ## 📦 智能跨平台桌面图片压缩工具
             
-            - **Windows**: `*.exe` - NSIS安装程序
-            - **macOS**: `*.dmg` - 拖拽安装包  
-            - **Linux**: `*.AppImage` - 直接运行文件
+            基于Google Squoosh的完整桌面应用，提供智能启动系统和零依赖架构。
             
-            ### ✨ 功能特性:
-            - 🎯 极致轻量: 24KB仓库实现50MB完整功能
-            - 🌐 智能联网: 自动获取最新Google Squoosh
-            - 🔄 离线友好: 网络异常时友好提示
-            - 🖥️ 跨平台: 完美支持Windows/macOS/Linux
+            ### 📥 下载安装包
+            
+            | 平台 | 文件类型 | 说明 |
+            |------|---------|------|
+            | 🪟 **Windows** | `.exe` | NSIS安装程序，支持x64和x86 |
+            | 🍎 **macOS** | `.dmg` | 拖拽安装包，支持Intel和Apple Silicon |
+            | 🐧 **Linux** | `.AppImage` | 直接运行文件，支持x64和ARM64 |
+            
+            ### ✨ 核心特性
+            
+            - 🎯 **智能启动**: Electron + HTTP服务器双重保障
+            - 🌐 **零依赖**: 纯Node.js内置模块，无第三方依赖
+            - 🔄 **优雅降级**: 网络问题时自动切换到本地模式
+            - 🖥️ **真正桌面体验**: 原生窗口或浏览器应用模式
+            - 📱 **完整功能**: 保持所有Google Squoosh特性
+            - 🛡️ **离线可用**: 完整的本地静态文件支持
+            
+            ### 🚀 快速开始
+            
+            #### 方式一：下载安装包（推荐）
+            1. 下载对应平台的安装包
+            2. 安装后直接运行
+            3. 享受完整桌面体验
+            
+            #### 方式二：源码运行
+            ```bash
+            git clone https://github.com/cloudv2077/Squoosh-Desktop.git
+            cd Squoosh-Desktop
+            npm install
+            ./start.sh          # macOS/Linux
+            start.bat           # Windows
+            ```
+            
+            ### 🔧 技术亮点
+            
+            - **网络问题解决**: 绕过Electron下载超时问题
+            - **多架构支持**: ARM64和x64原生支持
+            - **智能端口检测**: 自动避免端口冲突
+            - **WASM完整支持**: 所有图片编解码器正常工作
+            
+            ---
+            
+            💡 **提示**: 即使遇到网络问题，智能启动系统也会确保您能正常使用所有功能！
+            
+            🌟 **Star this repo if you find it useful!**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
