@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           echo "=== Build completed for ${{ matrix.name }} ==="
-          find dist/ -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" \) 2>/dev/null || echo "No installer files found"
+          find dist/ -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" 2>/dev/null || echo "No installer files found"
           ls -la dist/ 2>/dev/null || echo "No dist directory"
           
       - name: 📤 Upload Build Artifacts
@@ -77,73 +77,51 @@ jobs:
           
       - name: 📋 List Downloaded Files
         run: |
-          echo "=== Downloaded Artifacts ==="
-          find ./artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" \) || echo "No installer files found"
-          echo "=== All Files ==="
+          echo "=== Downloaded Artifacts Structure ==="
           find ./artifacts -type f | head -20
+          echo "=== Installer Files Only ==="
+          find ./artifacts -type f \( -name "*Setup*.exe" -o -name "*.dmg" -o -name "*.AppImage" \)
+          
+      - name: 🧹 Organize Release Files
+        run: |
+          mkdir -p ./release-files
+          echo "=== Moving installer files to release directory ==="
+          
+          # Move Windows installers (only Setup files, not elevate.exe or temp files)
+          find ./artifacts -name "*Setup*.exe" -exec cp {} ./release-files/ \;
+          
+          # Move macOS installers  
+          find ./artifacts -name "*.dmg" -exec cp {} ./release-files/ \;
+          
+          # Move Linux installers
+          find ./artifacts -name "*.AppImage" -exec cp {} ./release-files/ \;
+          
+          echo "=== Final release files ==="
+          ls -la ./release-files/
           
       - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            ./artifacts/**/*.exe
-            ./artifacts/**/*.dmg
-            ./artifacts/**/*.AppImage
-            ./artifacts/**/*.deb
-            ./artifacts/**/*.rpm
-          generate_release_notes: false
+          files: ./release-files/*
           name: "Squoosh Desktop ${{ github.ref_name }}"
           body: |
-            # 🎉 Squoosh Desktop ${{ github.ref_name }}
+            🎉 **Squoosh Desktop ${{ github.ref_name }}**
             
-            ## 📦 智能跨平台桌面图片压缩工具
+            📦 **下载对应平台的安装包:**
             
-            基于Google Squoosh的完整桌面应用，提供智能启动系统和零依赖架构。
+            - 🪟 **Windows**: `*Setup*x64.exe` (64位) / `*Setup*ia32.exe` (32位)  
+            - 🍎 **macOS**: `*.dmg` (Intel) / `*arm64.dmg` (Apple Silicon)
+            - 🐧 **Linux**: `*.AppImage` (x64) / `*arm64.AppImage` (ARM64)
             
-            ### 📥 下载安装包
+            ✨ **主要功能:**
+            - 智能启动系统 - 自动检测Electron，优雅降级到浏览器
+            - 跨平台支持 - Windows、macOS、Linux全覆盖
+            - 零外部依赖 - 纯Node.js实现
+            - 多架构支持 - x64、ARM64、ia32原生支持
             
-            | 平台 | 文件类型 | 说明 |
-            |------|---------|------|
-            | 🪟 **Windows** | `.exe` | NSIS安装程序，支持x64和x86 |
-            | 🍎 **macOS** | `.dmg` | 拖拽安装包，支持Intel和Apple Silicon |
-            | 🐧 **Linux** | `.AppImage` | 直接运行文件，支持x64和ARM64 |
-            
-            ### ✨ 核心特性
-            
-            - 🎯 **智能启动**: Electron + HTTP服务器双重保障
-            - 🌐 **零依赖**: 纯Node.js内置模块，无第三方依赖
-            - 🔄 **优雅降级**: 网络问题时自动切换到本地模式
-            - 🖥️ **真正桌面体验**: 原生窗口或浏览器应用模式
-            - 📱 **完整功能**: 保持所有Google Squoosh特性
-            - 🛡️ **离线可用**: 完整的本地静态文件支持
-            
-            ### 🚀 快速开始
-            
-            #### 方式一：下载安装包（推荐）
-            1. 下载对应平台的安装包
-            2. 安装后直接运行
-            3. 享受完整桌面体验
-            
-            #### 方式二：源码运行
-            ```bash
-            git clone https://github.com/cloudv2077/Squoosh-Desktop.git
-            cd Squoosh-Desktop
-            npm install
-            ./start.sh          # macOS/Linux
-            start.bat           # Windows
-            ```
-            
-            ### 🔧 技术亮点
-            
-            - **网络问题解决**: 绕过Electron下载超时问题
-            - **多架构支持**: ARM64和x64原生支持
-            - **智能端口检测**: 自动避免端口冲突
-            - **WASM完整支持**: 所有图片编解码器正常工作
-            
-            ---
-            
-            💡 **提示**: 即使遇到网络问题，智能启动系统也会确保您能正常使用所有功能！
-            
-            🌟 **Star this repo if you find it useful!**
+            🚀 **使用方法:** 下载对应平台安装包 → 安装 → 启动即可使用完整的图片压缩功能
+          draft: false
+          prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
