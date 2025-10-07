@@ -119,3 +119,46 @@ Apache-2.0 License
 ---
 
 🎉 享受完整的Squoosh Desktop体验！
+
+## 🔄 版本更新指南
+
+### 发布新版本前需要修改的文件
+
+#### 1. 必须修改
+```
+📄 package.json          # 更新 "version": "x.x.x"
+```
+
+#### 2. 功能更新时修改
+```
+📄 main.js               # 核心功能代码
+📄 scripts/fetch-squoosh.js  # 静态文件获取脚本
+📄 start.sh / start.bat  # 启动脚本（如有变化）
+```
+
+#### 3. 文档更新
+```
+📄 README.md             # 功能说明和使用文档
+📄 RELEASE_NOTES.md      # 版本更新日志（可选）
+```
+
+### 🚀 快速发布流程
+
+```bash
+# 1. 更新版本号
+npm version patch        # 或 minor/major
+
+# 2. 提交更改
+git push origin main
+
+# 3. 创建标签（触发自动构建）
+git tag -a v1.x.x -m "版本说明"
+git push origin v1.x.x
+```
+
+### 📋 版本类型说明
+- `patch`: Bug修复 (1.1.0 → 1.1.1)
+- `minor`: 新功能 (1.1.0 → 1.2.0)  
+- `major`: 重大更改 (1.1.0 → 2.0.0)
+
+> 💡 推送标签后，GitHub Actions会自动构建所有平台的安装包并发布到Release页面
