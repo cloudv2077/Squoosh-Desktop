@@ -5,6 +5,10 @@ on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -46,8 +50,7 @@ jobs:
         shell: bash
         run: |
           echo "=== Build completed for ${{ matrix.name }} ==="
-          ls -la dist/ 2>/dev/null || echo "No dist directory"
-          find dist/ -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" 2>/dev/null || echo "No installer files found"
+          find dist/ -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" 2>/dev/null || echo "No installer files found"
           
       - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -70,16 +73,15 @@ jobs:
       - name: 📋 List Downloaded Files
         run: |
           echo "=== Downloaded Artifacts ==="
-          find ./artifacts -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb"
+          find ./artifacts -type f -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage"
           
       - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./artifacts/**/*.exe
             ./artifacts/**/*.dmg
             ./artifacts/**/*.AppImage
-            ./artifacts/**/*.deb
           generate_release_notes: true
           name: Squoosh Desktop ${{ github.ref_name }}
           body: |
