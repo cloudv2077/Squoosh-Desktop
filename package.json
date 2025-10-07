@@ -1,13 +1,19 @@
 {
   "name": "squoosh-desktop",
   "version": "1.0.0",
-  "description": "Desktop image compression tool",
+  "description": "Desktop image compression tool based on Google Squoosh",
   "main": "main.js",
   "scripts": {
     "prebuild": "node scripts/fetch-squoosh.js",
     "start": "electron .",
-    "test-build": "echo 'Testing build setup' && npm run prebuild"
+    "build": "npm run prebuild && electron-builder",
+    "build:win": "npm run prebuild && electron-builder --win32",
+    "build:mac": "npm run prebuild && electron-builder --darwin", 
+    "build:linux": "npm run prebuild && electron-builder --linux"
   },
+  "keywords": ["electron", "squoosh", "image", "compression"],
+  "author": "Squoosh Desktop Team",
+  "license": "Apache-2.0",
   "devDependencies": {
     "electron": "25.9.0",
     "electron-builder": "24.6.4"
@@ -20,7 +26,19 @@
     },
     "files": [
       "main.js",
-      "squoosh-static/**/*"
-    ]
+      "squoosh-static/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Graphics"
+    }
   }
 }

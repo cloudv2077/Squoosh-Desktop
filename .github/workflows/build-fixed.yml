@@ -1,0 +1,50 @@
+name: 🎯 Fixed Build - Working Version
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win32
+          - os: macos-latest
+            platform: darwin
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: 📦 Install Dependencies
+        run: npm install
+        
+      - name: 🏗️ Prepare Build
+        run: npm run prebuild
+        
+      - name: 🔨 Build for Platform
+        run: npx electron-builder --${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📋 Show Results
+        run: ls -la dist/ 2>/dev/null || dir dist\ 2>/dev/null || echo "No dist found"
+          
+      - name: 📤 Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: squoosh-desktop-${{ matrix.platform }}
+          path: dist/
+          retention-days: 7
