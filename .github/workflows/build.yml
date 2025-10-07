@@ -1,4 +1,4 @@
-name: 🚀 Minimal Build & Release
+name: 🚀 Cross-Platform Build & Release
 
 on:
   push:
@@ -9,46 +9,108 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            platform: win
+            arch: x64
+            ext: exe
+          - os: macos-latest  
+            platform: mac
+            arch: arm64
+            ext: dmg
+          - os: macos-latest
+            platform: mac  
+            arch: x64
+            ext: dmg
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            ext: AppImage
     
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
       
-      - uses: actions/setup-node@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
       
-      - name: Install Dependencies
+      - name: 📦 Install Dependencies
         run: npm ci
-          
-      - name: Build Electron App  
-        run: npm run build
         
-      - name: Upload Artifacts
+      - name: 🏗️ Prepare Build Environment
+        run: |
+          mkdir -p dist
+          npm run prebuild
+          
+      - name: 🎯 Build Electron App
+        run: npm run build -- --${{ matrix.platform }} --${{ matrix.arch }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📋 List Build Output
+        run: |
+          echo "Build completed for ${{ matrix.platform }}-${{ matrix.arch }}"
+          ls -la dist/
+          
+      - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-build
-          path: dist/
+          name: squoosh-desktop-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.zip
+            dist/*.tar.gz
+          retention-days: 30
           
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Download Artifacts
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: 📥 Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist/
+          path: release-assets/
           
-      - name: Create Release
+      - name: 📋 Prepare Release Assets
+        run: |
+          echo "Preparing release assets..."
+          find release-assets/ -name "*.dmg" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.zip" | head -10
+          
+      - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/**/*
+          files: release-assets/**/*
           draft: false
           prerelease: false
+          generate_release_notes: true
+          body: |
+            🎯 **Squoosh Desktop v${{ github.ref_name }}**
+            
+            Revolutionary 24KB → 50MB dynamic desktop app!
+            
+            **📦 Downloads:**
+            - 🪟 **Windows**: `.exe` installer  
+            - 🍎 **macOS Intel**: `x64.dmg`
+            - 🍎 **macOS Apple Silicon**: `arm64.dmg`  
+            - 🐧 **Linux**: `.AppImage`
+            
+            **✨ Features:**
+            - Dynamic Google Squoosh integration
+            - Offline image compression
+            - Cross-platform support
+            - Zero-config experience
+            
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
