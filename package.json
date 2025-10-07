@@ -8,14 +8,19 @@
     "start": "electron .",
     "build": "npm run prebuild && electron-builder",
     "build:win": "npm run prebuild && electron-builder --win32",
-    "build:mac": "npm run prebuild && electron-builder --darwin", 
+    "build:mac": "npm run prebuild && electron-builder --darwin",
     "build:linux": "npm run prebuild && electron-builder --linux"
   },
-  "keywords": ["electron", "squoosh", "image", "compression"],
+  "keywords": [
+    "electron",
+    "squoosh",
+    "image",
+    "compression"
+  ],
   "author": "Squoosh Desktop Team",
   "license": "Apache-2.0",
   "devDependencies": {
-    "electron": "25.9.0",
+    "electron": "^25.9.0",
     "electron-builder": "24.6.4"
   },
   "build": {
