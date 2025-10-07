@@ -1,0 +1,39 @@
+name: 🧪 Test Build - Minimal
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js  
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: 📦 Install Dependencies
+        run: |
+          echo "=== Installing dependencies ==="
+          npm install
+          echo "=== Dependencies installed ==="
+          
+      - name: 🏗️ Test Prebuild
+        run: |
+          echo "=== Testing prebuild script ==="
+          npm run prebuild
+          echo "=== Checking squoosh-static ==="
+          ls -la squoosh-static/ || echo "squoosh-static not found"
+          
+      - name: 🧪 Test Basic Build
+        run: |
+          echo "=== Testing basic electron-builder ==="
+          npx electron-builder --version
+          echo "=== Available electron version ==="
+          npx electron --version || echo "Electron not found"
